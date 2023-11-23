@@ -1,0 +1,1 @@
+I'm building a Linear Algebra class that puts together all the stuff I've been learning in my college math course. It's gonna do everything I've picked up, and I'm making it easy to use.
