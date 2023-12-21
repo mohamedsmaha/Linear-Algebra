@@ -1,4 +1,15 @@
 "use strict";
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
         if (ar || !(i in from)) {
@@ -14,6 +25,9 @@ var Linear_Algebra = /** @class */ (function () {
         var _this = this;
         this.Matrices = {};
         this.Errors = [];
+        this.Index_System = "From_Zero";
+        // Functions trade indices with each other based on From_Zero System.
+        // The user interface function supports two index systems.
         this.Helper = {
             Get_Matrix_info: function (Matrix) {
                 var Rows = Matrix.length;
@@ -28,6 +42,22 @@ var Linear_Algebra = /** @class */ (function () {
                 var arr = Matrices_Names.map(function (item) { return _this.Matrices[item].Data; });
                 return arr;
             },
+            Find_pivot: function (Matrix, location, info, start) {
+                if (info.Rows <= location.R) {
+                    location.C += 1;
+                    location.R = start.R;
+                }
+                if (info.Columns <= location.C) {
+                    return false;
+                }
+                if (Matrix[location.R][location.C] != 0) {
+                    return { "R": location.R, "C": location.C };
+                }
+                else {
+                    location.R += 1;
+                }
+                return _this.Helper.Find_pivot(Matrix, location, info, start);
+            }
         };
         this.Check_Questions = {
             Is_This_Matrix: function () {
@@ -308,29 +338,57 @@ var Linear_Algebra = /** @class */ (function () {
         };
         this.Elementry_Matrices_operations = {
             Switch_Two_Rows: function (Matrix, R1, R2) {
-                R1 -= 1;
-                R2 -= 1;
                 var hold = Matrix[R1];
                 Matrix[R1] = Matrix[R2];
                 Matrix[R2] = hold;
                 return Matrix;
             },
             Adding_Multiple_Of_Two_Rows: function (Matrix, R_From, Number, R_To) {
-                R_From -= 1;
-                R_To -= 1;
-                for (var i = 0; i < Number; i++) {
-                    for (var j = 0; j < Matrix[R_From].length; j++) {
-                        Matrix[R_To][j] += Matrix[R_From][j];
-                    }
+                var Row = _this.Matrices_Operations.scalar_multiplication(Number, [Matrix[R_From]]);
+                for (var j = 0; j < Matrix[R_From].length; j++) {
+                    Matrix[R_To][j] += Row[0][j];
                 }
                 return Matrix;
             },
             Multiplying_Row_By_Scalar: function (Matrix, R, number) {
-                R -= 1;
-                Matrix[R] = Matrix[R].map(function (item) { return item * number; });
+                Matrix[R] = Matrix[R].map(function (item) { return +(item * number).toFixed(3); });
                 return Matrix;
             },
+            Row_Echelon_Form: function (Matrix) {
+                var info = _this.Helper.Get_Matrix_info(Matrix);
+                var Next_Pivot = { "R": 0, "C": 0 };
+                var Set_pivot = function () {
+                    var result = _this.Helper.Find_pivot(Matrix, __assign({}, Next_Pivot), info, __assign({}, Next_Pivot));
+                    if (result == false) {
+                        return false;
+                    }
+                    var number = 1 / Matrix[result.R][result.C];
+                    Matrix = _this.Elementry_Matrices_operations.Switch_Two_Rows(Matrix, Next_Pivot.R, result.R);
+                    Matrix = _this.Elementry_Matrices_operations.Multiplying_Row_By_Scalar(Matrix, Next_Pivot.R, number);
+                    return true;
+                };
+                var reset_under_pivots = function (Row) {
+                    if (info.Rows <= Row) {
+                        return;
+                    }
+                    var Number = Matrix[Row][Next_Pivot.C] * -1;
+                    Matrix = _this.Elementry_Matrices_operations.Adding_Multiple_Of_Two_Rows(Matrix, Next_Pivot.R, Number, Row);
+                    return reset_under_pivots(Row + 1);
+                };
+                var Find_REF = function () {
+                    var found_pivot = Set_pivot();
+                    if (!found_pivot) {
+                        return Matrix;
+                    }
+                    reset_under_pivots(Next_Pivot.R + 1);
+                    Next_Pivot.R += 1;
+                    Next_Pivot.C += 1;
+                    return Find_REF();
+                };
+                return Find_REF();
+            }
         };
+        // Equations 
         // Matrices_Operations 
         this.Add_Sub = function (output_name, Operation, image) {
             var _a, _b, _c, _d;

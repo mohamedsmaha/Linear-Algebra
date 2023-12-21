@@ -3,6 +3,7 @@ export type Matrix = Row[]
 export type Matrices = {[key : string] : {Data : Matrix , info : info}}
 export type Errors   = string[]
 export type info     = {Rows : number , Columns : number} 
+export type pivot_location = {R : number , C : number}
 // Functions_Variables
     // Check
         export type Check_Questions = {
@@ -23,12 +24,15 @@ export type info     = {Rows : number , Columns : number}
         export type Helper = {
             Get_Matrix_info: (Matrix : Matrix) => info ,
             Get_Matrices_by_Thier_name : (...Matrices_Names : string[]) => Matrix[],
+            Find_pivot                 :
+            (Matrix : Matrix , location : pivot_location , info :info , start :pivot_location) => false | pivot_location
         }
     // Elementary Marices
         export type Elementary_Matrices = {
             Switch_Two_Rows             : (Matrix : Matrix   , R1:number , R2     : number) => Matrix   ,
             Multiplying_Row_By_Scalar   : (Matrix : Matrix   , R :number , number : number) => Matrix ,
-            Adding_Multiple_Of_Two_Rows : (Matrix : Matrix   , R_From:number , Number , R_To : number)  => Matrix        
+            Adding_Multiple_Of_Two_Rows : (Matrix : Matrix   , R_From:number , Number , R_To : number)  => Matrix  ,
+            Row_Echelon_Form            : (Matrix : Matrix) => Matrix     
         }
     // Matrices Operations
         export type Matrices_Operations = {
@@ -44,6 +48,8 @@ export type info     = {Rows : number , Columns : number}
             Zero_Matrix     : (Rows , Columns) => Matrix
         }
 // Functions
+    // Equations
+        export type Row_Echelon_Form = (Matrix : Matrix) => Matrix
     //Set Functions
         export type Set_Matrix = (Matrix: Matrix  , output_name:string)    => void
         export type Set_Error  = (image : string  , Error_name:Error_name) => void
